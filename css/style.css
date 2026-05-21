@@ -216,6 +216,7 @@ ul { list-style: none; }
 /* ── Hero ── */
 .hero {
   min-height: 100vh;
+  background-color: #1a2744;
   background: linear-gradient(135deg, var(--navy) 0%, #0f1a3d 100%);
   display: flex;
   align-items: center;
@@ -245,7 +246,7 @@ ul { list-style: none; }
 
 .hero-title {
   font-size: clamp(2.25rem, 5vw, 3.5rem);
-  color: var(--cream);
+  color: #ffffff;
   margin-bottom: 1.25rem;
 }
 .hero-title em { color: var(--gold); font-style: italic; }
