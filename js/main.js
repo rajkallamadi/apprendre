@@ -50,7 +50,8 @@ function initScrollAnimations() {
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
-        entry.target.classList.add('visible');
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
         observer.unobserve(entry.target);
       }
     });
@@ -62,23 +63,7 @@ function initScrollAnimations() {
     el.style.transition = 'opacity .5s ease, transform .5s ease';
     observer.observe(el);
   });
-
-  document.addEventListener('animationend', (e) => {
-    if (e.target.classList.contains('visible')) {
-      e.target.style.opacity = '';
-      e.target.style.transform = '';
-    }
-  });
 }
-
-document.querySelectorAll('.feature-card, .course-card, .testimonial-card').forEach(el => {
-  el.addEventListener('transitionend', () => {
-    if (el.classList.contains('visible')) {
-      el.style.opacity = '1';
-      el.style.transform = 'translateY(0)';
-    }
-  });
-});
 
 /* ── Toast notifications ── */
 function showToast(message, type = 'info') {
@@ -114,25 +99,6 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     }
   });
 });
-
-/* ── Contact form ── */
-const contactForm = document.getElementById('contactForm');
-if (contactForm) {
-  contactForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const btn = contactForm.querySelector('[type="submit"]');
-    const original = btn.textContent;
-    btn.textContent = 'Sending…';
-    btn.disabled = true;
-
-    setTimeout(() => {
-      btn.textContent = original;
-      btn.disabled = false;
-      contactForm.reset();
-      showToast('Message sent! We\'ll be in touch soon.', 'success');
-    }, 1500);
-  });
-}
 
 /* ── Expose globally ── */
 window.showToast = showToast;
