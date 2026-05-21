@@ -216,8 +216,8 @@ ul { list-style: none; }
 /* ── Hero ── */
 .hero {
   min-height: 100vh;
+  background: linear-gradient(135deg, #1a2744 0%, #0f1a3d 100%);
   background-color: #1a2744;
-  background: linear-gradient(135deg, var(--navy) 0%, #0f1a3d 100%);
   display: flex;
   align-items: center;
   position: relative;
