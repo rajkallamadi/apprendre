@@ -61,8 +61,13 @@ async function loadOngoingCoursesPreview() {
     grid.innerHTML = ongoing.map(buildOngoingCard).join('');
     animateNewCards(grid);
   } catch (err) {
-    console.error(err);
-    grid.innerHTML = '<p style="color:var(--text-mid);grid-column:1/-1;text-align:center;padding:3rem 0">Unable to load courses. Please try again later.</p>';
+    console.error('Courses preview load failed:', err);
+    const isFileProtocol = window.location.protocol === 'file:';
+    grid.innerHTML = `<p style="color:var(--text-mid);grid-column:1/-1;text-align:center;padding:3rem 0">
+      ${isFileProtocol
+        ? 'Open via VS Code Live Server or GitHub Pages — browsers block local file fetches.'
+        : 'Unable to load courses. Please try again later.'}
+    </p>`;
   }
 }
 

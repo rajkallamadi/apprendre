@@ -415,14 +415,19 @@
       initCourseFilters();
       try {
         const res = await fetch('data/courses.json');
-        if (!res.ok) throw new Error('Network error');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         allCourses = data.courses;
         applyFilters();
       } catch (err) {
-        console.error(err);
+        console.error('Courses load failed:', err);
+        const isFileProtocol = window.location.protocol === 'file:';
         document.getElementById('allCoursesGrid').innerHTML =
-          '<p style="color:var(--text-mid);grid-column:1/-1;text-align:center;padding:3rem 0">Unable to load courses. Please try again later.</p>';
+          `<p style="color:var(--text-mid);grid-column:1/-1;text-align:center;padding:3rem 0">
+            ${isFileProtocol
+              ? 'Open the site via a web server (e.g. VS Code Live Server or GitHub Pages) — browsers block local file access.'
+              : 'Unable to load courses. Please try again later.'}
+          </p>`;
       }
     });
 
