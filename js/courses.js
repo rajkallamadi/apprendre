@@ -43,32 +43,20 @@ function buildOngoingCard(course) {
 }
 
 /* ── Load first 4 ongoing-batch courses into homepage preview ── */
-async function loadOngoingCoursesPreview() {
+function loadOngoingCoursesPreview() {
   const grid = document.getElementById('ongoingCoursesPreview');
   if (!grid) return;
 
-  try {
-    const res = await fetch('data/courses.json');
-    if (!res.ok) throw new Error('Failed to load courses');
-    const data    = await res.json();
-    const ongoing = data.courses.filter(c => c.type === 'ongoing-batch').slice(0, 4);
+  const data    = window.COURSES_DATA;
+  const ongoing = data.courses.filter(c => c.type === 'ongoing-batch').slice(0, 4);
 
-    if (ongoing.length === 0) {
-      grid.innerHTML = '<p style="color:var(--text-mid);grid-column:1/-1;text-align:center;padding:3rem 0">No ongoing courses at this time. Please check back soon.</p>';
-      return;
-    }
-
-    grid.innerHTML = ongoing.map(buildOngoingCard).join('');
-    animateNewCards(grid);
-  } catch (err) {
-    console.error('Courses preview load failed:', err);
-    const isFileProtocol = window.location.protocol === 'file:';
-    grid.innerHTML = `<p style="color:var(--text-mid);grid-column:1/-1;text-align:center;padding:3rem 0">
-      ${isFileProtocol
-        ? 'Open via VS Code Live Server or GitHub Pages — browsers block local file fetches.'
-        : 'Unable to load courses. Please try again later.'}
-    </p>`;
+  if (ongoing.length === 0) {
+    grid.innerHTML = '<p style="color:var(--text-mid);grid-column:1/-1;text-align:center;padding:3rem 0">No ongoing courses at this time. Please check back soon.</p>';
+    return;
   }
+
+  grid.innerHTML = ongoing.map(buildOngoingCard).join('');
+  animateNewCards(grid);
 }
 
 if (document.getElementById('ongoingCoursesPreview')) {
