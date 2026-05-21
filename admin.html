@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Apprendre</title>
+  <!-- Prevent search engines from indexing this page -->
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* ── Admin layout ── */
+    body { background: #eeeae4; margin: 0; padding: 0; }
+
+    .admin-layout {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      min-height: 100vh;
+    }
+
+    /* ── Sidebar ── */
+    .admin-sidebar {
+      background: var(--navy);
+      position: fixed;
+      top: 0; left: 0;
+      height: 100vh;
+      width: 240px;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      z-index: 100;
+    }
+
+    .sidebar-logo {
+      padding: 1.5rem 1.75rem 1.25rem;
+      border-bottom: 1px solid rgba(201,168,76,.15);
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      color: var(--cream);
+      font-style: italic;
+      letter-spacing: .01em;
+    }
+    .sidebar-logo span { color: var(--gold); }
+    .sidebar-logo small {
+      display: block;
+      font-family: 'Lato', sans-serif;
+      font-size: .68rem;
+      font-style: normal;
+      font-weight: 700;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: rgba(248,244,237,.35);
+      margin-top: .2rem;
+    }
+
+    .sidebar-nav { padding: 1.25rem 0; flex: 1; }
+    .sidebar-nav-label {
+      font-size: .68rem; font-weight: 700; letter-spacing: .18em;
+      text-transform: uppercase; color: rgba(248,244,237,.3);
+      padding: 1rem 1.75rem .4rem;
+    }
+    .sidebar-nav a {
+      display: flex; align-items: center; gap: .7rem;
+      padding: .7rem 1.75rem;
+      color: rgba(248,244,237,.6);
+      font-size: .875rem; font-weight: 400;
+      transition: all var(--transition);
+      text-decoration: none;
+    }
+    .sidebar-nav a:hover, .sidebar-nav a.active {
+      background: rgba(201,168,76,.1);
+      color: var(--gold);
+      border-right: 3px solid var(--gold);
+    }
+    .sidebar-nav .nav-icon { font-size: 1rem; flex-shrink: 0; }
+
+    .sidebar-bottom {
+      border-top: 1px solid rgba(255,255,255,.07);
+      padding: .75rem 0;
+    }
+    .sidebar-bottom a {
+      display: flex; align-items: center; gap: .7rem;
+      padding: .65rem 1.75rem;
+      color: rgba(248,244,237,.5);
+      font-size: .875rem;
+      transition: color var(--transition);
+      text-decoration: none;
+    }
+    .sidebar-bottom a:hover { color: var(--gold); }
+
+    /* ── Main content ── */
+    .admin-main {
+      margin-left: 240px;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    .admin-topbar {
+      background: var(--white);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 1px 0 rgba(26,39,68,.07);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .admin-topbar h1 { font-size: 1.25rem; color: var(--navy); }
+    .topbar-user {
+      display: flex; align-items: center; gap: .75rem;
+      font-size: .85rem; color: var(--text-light);
+    }
+    .topbar-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: var(--navy);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--gold);
+      font-family: 'Playfair Display', serif;
+      font-weight: 700; font-size: 1rem;
+    }
+
+    .admin-content { padding: 2rem; flex: 1; }
+
+    .admin-section { display: none; }
+    .admin-section.active { display: block; }
+
+    /* ── Stat cards ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: var(--white); border-radius: 10px;
+      padding: 1.5rem; box-shadow: var(--shadow-sm);
+      display: flex; align-items: center; gap: 1rem;
+    }
+    .stat-card-icon {
+      width: 48px; height: 48px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; flex-shrink: 0;
+    }
+    .icon-navy  { background: rgba(26,39,68,.08); }
+    .icon-gold  { background: rgba(201,168,76,.12); }
+    .icon-blue  { background: rgba(59,130,246,.1); }
+    .icon-amber { background: rgba(234,179,8,.1); }
+    .stat-card-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.75rem; color: var(--navy); line-height: 1;
+    }
+    .stat-card-label { font-size: .78rem; color: var(--text-light); margin-top: .2rem; }
+
+    /* ── Table card ── */
+    .table-card {
+      background: var(--white);
+      border-radius: 10px;
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    .table-card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.1rem 1.5rem;
+      border-bottom: 1px solid rgba(26,39,68,.06);
+      flex-wrap: wrap; gap: .75rem;
+    }
+    .table-card-header h3 { font-size: 1rem; color: var(--navy); }
+
+    .table-card-actions { display: flex; gap: .6rem; align-items: center; }
+
+    .table-wrap { overflow-x: auto; }
+
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      font-size: .72rem; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--text-light);
+      padding: .75rem 1.25rem; text-align: left;
+      background: rgba(26,39,68,.02);
+      border-bottom: 1px solid rgba(26,39,68,.06);
+      white-space: nowrap;
+    }
+    tbody td {
+      padding: .9rem 1.25rem;
+      font-size: .875rem; color: var(--text-mid);
+      border-bottom: 1px solid rgba(26,39,68,.04);
+      vertical-align: middle;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: rgba(201,168,76,.03); }
+
+    .course-title-cell strong { color: var(--navy); font-size: .9rem; display: block; }
+    .course-title-cell span   { font-size: .78rem; color: var(--text-light); }
+
+    /* ── Inline badges ── */
+    .badge-sm {
+      display: inline-block; padding: .15rem .55rem; border-radius: 20px;
+      font-size: .68rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+    }
+    .badge-sm.delf            { background: rgba(201,168,76,.14); color: #7a5500; }
+    .badge-sm.casual          { background: rgba(34,197,94,.1);   color: #166534; }
+    .badge-sm.school-tutoring { background: rgba(139,92,246,.1);  color: #5b21b6; }
+    .badge-sm.tef             { background: rgba(59,130,246,.1);  color: #1e40af; }
+    .badge-sm.type-ongoing-batch { background: rgba(26,39,68,.08); color: var(--navy); }
+    .badge-sm.type-individual    { background: rgba(59,130,246,.08); color: #1e40af; }
+    .badge-sm.type-upcoming      { background: rgba(234,179,8,.1);  color: #92400e; }
+
+    .badge-open   { background: rgba(34,197,94,.12); color: #166534; }
+    .badge-closed { background: rgba(239,68,68,.08); color: #b91c1c; }
+
+    /* ── Action buttons ── */
+    .action-btns { display: flex; gap: .4rem; }
+    .action-btn {
+      padding: .28rem .65rem; font-size: .75rem;
+      border-radius: 4px; cursor: pointer;
+      border: 1px solid transparent; font-weight: 700;
+      transition: all var(--transition); font-family: 'Lato', sans-serif;
+    }
+    .action-btn-edit   { background: rgba(26,39,68,.07); color: var(--navy); border-color: rgba(26,39,68,.1); }
+    .action-btn-delete { background: rgba(239,68,68,.07); color: #b91c1c;    border-color: rgba(239,68,68,.12); }
+    .action-btn-edit:hover   { background: var(--navy); color: var(--white); }
+    .action-btn-delete:hover { background: #b91c1c; color: var(--white); }
+
+    /* ── Toggle switch ── */
+    .toggle-wrap { display: flex; align-items: center; gap: .75rem; }
+    .toggle-wrap label { font-size: .875rem; color: var(--text-mid); font-weight: 400; cursor: pointer; }
+    .toggle { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; cursor: pointer; inset: 0;
+      background: rgba(26,39,68,.15); border-radius: 24px; transition: .2s;
+    }
+    .toggle-slider::before {
+      content: ''; position: absolute;
+      height: 18px; width: 18px; left: 3px; bottom: 3px;
+      background: var(--white); border-radius: 50%; transition: .2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,.2);
+    }
+    .toggle input:checked + .toggle-slider { background: var(--gold); }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+    /* ── JSON Export Panel ── */
+    .json-panel {
+      margin-top: 2rem;
+      background: var(--white);
+      border-radius: 10px;
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    .json-panel-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.1rem 1.5rem;
+      border-bottom: 1px solid rgba(26,39,68,.07);
+    }
+    .json-panel-header h3 { font-size: 1rem; color: var(--navy); }
+    .json-close {
+      background: none; border: none; font-size: 1.5rem;
+      cursor: pointer; color: var(--text-light); line-height: 1;
+      padding: 0; transition: color var(--transition);
+    }
+    .json-close:hover { color: var(--navy); }
+    .json-note {
+      background: rgba(201,168,76,.07);
+      border-left: 4px solid var(--gold);
+      padding: 1rem 1.5rem;
+      font-size: .875rem;
+      color: var(--text-mid);
+      line-height: 1.65;
+    }
+    .json-note strong { color: var(--navy); }
+    .json-note code {
+      background: rgba(26,39,68,.08);
+      padding: .1rem .35rem;
+      border-radius: 3px;
+      font-size: .85em;
+      color: var(--navy);
+    }
+    .json-textarea {
+      display: block;
+      width: 100%;
+      height: 340px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: .8rem;
+      padding: 1.25rem 1.5rem;
+      border: none;
+      border-top: 1px solid rgba(26,39,68,.07);
+      border-bottom: 1px solid rgba(26,39,68,.07);
+      resize: vertical;
+      color: var(--text-dark);
+      background: rgba(26,39,68,.015);
+      outline: none;
+      line-height: 1.55;
+      box-sizing: border-box;
+    }
+    .json-actions {
+      display: flex; gap: .75rem;
+      padding: 1.1rem 1.5rem;
+      justify-content: flex-end;
+    }
+
+    /* ── Login overlay ── */
+    #loginOverlay {
+      position: fixed; inset: 0;
+      background: linear-gradient(135deg, var(--navy) 0%, #0d1630 100%);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999; padding: 1rem;
+    }
+    #loginBox {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: var(--shadow-lg);
+    }
+    .login-logo {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .login-logo .brand {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.75rem;
+      color: var(--navy);
+      font-style: italic;
+    }
+    .login-logo .brand span { color: var(--gold); }
+    .login-logo p {
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--text-light);
+      margin-top: .2rem;
+    }
+
+    .login-error {
+      font-size: .82rem;
+      color: #b91c1c;
+      text-align: center;
+      min-height: 1.2em;
+      margin-bottom: .5rem;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%       { transform: translateX(-8px); }
+      40%       { transform: translateX(8px); }
+      60%       { transform: translateX(-5px); }
+      80%       { transform: translateX(5px); }
+    }
+    .shake { animation: shake .45s ease; }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(10,15,30,.6);
+      z-index: 2000;
+      display: none; align-items: center; justify-content: center; padding: 1rem;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--white); border-radius: 12px;
+      width: 100%; max-width: 580px;
+      max-height: 90vh; overflow-y: auto;
+      box-shadow: var(--shadow-lg);
+    }
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.35rem 1.75rem;
+      border-bottom: 1px solid rgba(26,39,68,.08);
+      position: sticky; top: 0; background: var(--white); z-index: 1;
+    }
+    .modal-header h3 { font-size: 1.15rem; color: var(--navy); }
+    .modal-close {
+      background: none; border: none; font-size: 1.5rem;
+      cursor: pointer; color: var(--text-light); line-height: 1; padding: 0;
+    }
+    .modal-close:hover { color: var(--navy); }
+    .modal-body { padding: 1.75rem; }
+    .modal-footer {
+      padding: 1.1rem 1.75rem;
+      border-top: 1px solid rgba(26,39,68,.08);
+      display: flex; justify-content: flex-end; gap: .6rem;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .admin-layout { grid-template-columns: 1fr; }
+      .admin-sidebar { width: 100%; height: auto; position: relative; }
+      .admin-main { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ════════════════════════════════════════════════
+       LOGIN OVERLAY
+       Password: apprendre2026
+       Stored as SHA-256: 0495c2807471a7ac98d62ff6d716cfb844ec7304da061660eccb9801cb75e054
+       To change password: run sha256('new-password') in DevTools and update PASS_HASH below
+  ═════════════════════════════════════════════════ -->
+  <div id="loginOverlay">
+    <div id="loginBox">
+      <div class="login-logo">
+        <div class="brand"><em>apprendre</em> <span>·</span></div>
+        <p>Admin Panel</p>
+      </div>
+      <form id="loginForm" novalidate autocomplete="off">
+        <div class="login-error" id="loginError"></div>
+        <div class="form-group">
+          <label for="adminPass">Password</label>
+          <input type="password" id="adminPass" placeholder="••••••••"
+            autocomplete="current-password" required />
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;margin-top:.25rem" id="loginBtn">
+          Sign In
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════
+       ADMIN SHELL (hidden until authenticated)
+  ═════════════════════════════════════════════════ -->
+  <div class="admin-layout" id="adminShell" style="visibility:hidden">
+
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-logo">
+        <em>apprendre</em> <span>·</span>
+        <small>Admin Panel</small>
+      </div>
+      <nav class="sidebar-nav">
+        <p class="sidebar-nav-label">Main</p>
+        <a href="#" data-section="dashboardSection" class="active">
+          <span class="nav-icon">📊</span> Dashboard
+        </a>
+        <a href="#" data-section="coursesSection">
+          <span class="nav-icon">📚</span> Courses
+        </a>
+      </nav>
+      <div class="sidebar-bottom">
+        <a href="index.html" target="_blank" rel="noopener">
+          <span class="nav-icon">🌐</span> View Site
+        </a>
+        <a href="#" onclick="logout(); return false;">
+          <span class="nav-icon">🚪</span> Sign Out
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="admin-main">
+
+      <div class="admin-topbar">
+        <h1 id="adminPageTitle">Dashboard</h1>
+        <div class="topbar-user">
+          <span>Logged in as Admin</span>
+          <div class="topbar-avatar">A</div>
+        </div>
+      </div>
+
+      <div class="admin-content">
+
+        <!-- ── Dashboard ── -->
+        <div class="admin-section active" id="dashboardSection">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-card-icon icon-navy">📚</div>
+              <div>
+                <div class="stat-card-value" id="statTotal">—</div>
+                <div class="stat-card-label">Total Courses</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-icon icon-gold">▶</div>
+              <div>
+                <div class="stat-card-value" id="statOngoing">—</div>
+                <div class="stat-card-label">Ongoing Batches</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-icon icon-blue">👤</div>
+              <div>
+                <div class="stat-card-value" id="statIndividual">—</div>
+                <div class="stat-card-label">Individual Classes</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-icon icon-amber">🔜</div>
+              <div>
+                <div class="stat-card-value" id="statUpcoming">—</div>
+                <div class="stat-card-label">Upcoming</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-card">
+            <div class="table-card-header">
+              <h3>All Courses — Quick View</h3>
+              <button class="btn btn-navy" onclick="switchSection('coursesSection')"
+                style="padding:.4rem 1rem;font-size:.8rem">Manage →</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Type</th>
+                    <th>Admissions</th>
+                  </tr>
+                </thead>
+                <tbody id="dashCoursesBody">
+                  <tr><td colspan="4" style="text-align:center;padding:2rem;color:var(--text-light)">Loading…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Courses ── -->
+        <div class="admin-section" id="coursesSection">
+          <div class="table-card">
+            <div class="table-card-header">
+              <h3>All Courses</h3>
+              <div class="table-card-actions">
+                <button class="btn btn-primary" onclick="openAddModal()"
+                  style="padding:.5rem 1.1rem;font-size:.85rem">+ Add New Course</button>
+                <button class="btn btn-navy" onclick="generateJson()"
+                  style="padding:.5rem 1.1rem;font-size:.85rem">⬇ Generate JSON</button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Type</th>
+                    <th>Date Range</th>
+                    <th>Admissions</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adminCoursesBody">
+                  <tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-light)">Loading…</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- ════════════════════════════════════════
+               JSON EXPORT PANEL
+               NOTE FOR DEVELOPERS:
+               GitHub Pages serves static files — there is no server-side write capability.
+               Clicking "Download courses.json" saves the updated JSON to your local machine.
+               To publish your changes:
+                 1. Download the file using the button below
+                 2. Replace data/courses.json in your repository
+                    (drag-and-drop on GitHub.com → your repo → data/ folder works perfectly)
+                 3. Commit the change — the live site will update automatically.
+          ══════════════════════════════════════════ -->
+          <div id="jsonPanel" style="display:none">
+            <div class="json-panel">
+              <div class="json-panel-header">
+                <h3>Generated courses.json</h3>
+                <button class="json-close" onclick="closeJsonPanel()" aria-label="Close">&times;</button>
+              </div>
+              <div class="json-note">
+                <strong>ℹ GitHub Pages is static</strong> — this panel cannot write files directly to the server.
+                To save your changes, download the file below and commit <code>data/courses.json</code>
+                to your repository. On GitHub.com you can drag-and-drop the file onto the
+                <code>data/</code> folder in your repo to replace it in one step.
+              </div>
+              <textarea id="jsonOutput" class="json-textarea" readonly spellcheck="false"
+                aria-label="Generated courses.json content"></textarea>
+              <div class="json-actions">
+                <button class="btn btn-outline" onclick="copyJson()"
+                  style="color:var(--navy);border-color:rgba(26,39,68,.2)">
+                  Copy to Clipboard
+                </button>
+                <button class="btn btn-primary" onclick="downloadJson()">
+                  ⬇ Download courses.json
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div><!-- /admin-content -->
+    </main>
+  </div><!-- /admin-layout -->
+
+  <!-- ════════════════════════════════════════════════
+       COURSE EDIT / ADD MODAL
+  ═════════════════════════════════════════════════ -->
+  <div class="modal-overlay" id="courseModal" role="dialog" aria-modal="true" aria-labelledby="courseModalTitle">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="courseModalTitle">Add New Course</h3>
+        <button class="modal-close" onclick="closeCourseModal()" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="courseForm" novalidate>
+          <!-- Hidden: stores the ID when editing -->
+          <input type="hidden" id="fId" />
+
+          <div class="form-group">
+            <label for="fTitle">Title *</label>
+            <input type="text" id="fTitle" required placeholder="e.g. DELF Junior A2" />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="fCategory">Category *</label>
+              <select id="fCategory">
+                <option value="delf">DELF</option>
+                <option value="tef">TEF / TCF</option>
+                <option value="school-tutoring">School Tutoring</option>
+                <option value="casual">Casual French</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="fType">Type *</label>
+              <select id="fType">
+                <option value="ongoing-batch">Ongoing Batch</option>
+                <option value="individual">Individual Class</option>
+                <option value="upcoming">Upcoming</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="fStart">Start Date</label>
+              <input type="month" id="fStart" />
+            </div>
+            <div class="form-group">
+              <label for="fEnd">End Date</label>
+              <input type="month" id="fEnd" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="fDesc">Description *</label>
+            <textarea id="fDesc" rows="4" required
+              placeholder="Describe the course content, goals, and structure…"></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="fAgeGroup">Age Group *</label>
+              <select id="fAgeGroup">
+                <option value="junior">Junior (children)</option>
+                <option value="adult">Adult</option>
+                <option value="all">All ages</option>
+                <option value="school">School students</option>
+              </select>
+            </div>
+            <div class="form-group" style="display:flex;flex-direction:column;justify-content:flex-end">
+              <label style="margin-bottom:.6rem">Open for Admissions</label>
+              <div class="toggle-wrap">
+                <label class="toggle" aria-label="Open for admissions toggle">
+                  <input type="checkbox" id="fAdmission" />
+                  <span class="toggle-slider"></span>
+                </label>
+                <label for="fAdmission" style="cursor:pointer">Currently accepting students</label>
+              </div>
+            </div>
+          </div>
+
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeCourseModal()"
+          style="color:var(--navy);border-color:rgba(26,39,68,.2)">Cancel</button>
+        <button type="submit" form="courseForm" class="btn btn-primary">Save Course</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ============================================================
+       ADMIN PANEL — all logic self-contained (no external JS deps)
+       Password: apprendre2026
+       SHA-256 hash stored below. To change password:
+         1. Open DevTools console (F12)
+         2. Run: sha256('your-new-password').then(h => console.log(h))
+         3. Replace PASS_HASH with the result
+    ============================================================ */
+
+    const PASS_HASH = '0495c2807471a7ac98d62ff6d716cfb844ec7304da061660eccb9801cb75e054';
+
+    /* ── State ── */
+    let adminCourses = [];
+    let editingId    = null;
+
+    /* ── SHA-256 via Web Crypto API ── */
+    async function sha256(str) {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+      return Array.from(new Uint8Array(buf))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
+    }
+
+    /* ── Boot: check session ── */
+    if (sessionStorage.getItem('admin_auth') === '1') {
+      showShell();
+      loadCourses();
+    } else {
+      document.getElementById('loginOverlay').style.display = 'flex';
+    }
+
+    /* ── Login form ── */
+    document.getElementById('loginForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const btn = document.getElementById('loginBtn');
+      const errEl = document.getElementById('loginError');
+      errEl.textContent = '';
+      btn.textContent = 'Checking…';
+      btn.disabled = true;
+
+      const entered = document.getElementById('adminPass').value;
+      const hash    = await sha256(entered);
+
+      if (hash === PASS_HASH) {
+        sessionStorage.setItem('admin_auth', '1');
+        document.getElementById('loginOverlay').style.display = 'none';
+        showShell();
+        await loadCourses();
+      } else {
+        const box = document.getElementById('loginBox');
+        box.classList.add('shake');
+        setTimeout(() => box.classList.remove('shake'), 500);
+        errEl.textContent = 'Incorrect password. Please try again.';
+        document.getElementById('adminPass').value = '';
+        document.getElementById('adminPass').focus();
+        btn.textContent = 'Sign In';
+        btn.disabled = false;
+      }
+    });
+
+    function showShell() {
+      document.getElementById('adminShell').style.visibility = 'visible';
+    }
+
+    function logout() {
+      sessionStorage.removeItem('admin_auth');
+      location.reload();
+    }
+
+    /* ── Load courses from JSON ── */
+    async function loadCourses() {
+      try {
+        const res  = await fetch('data/courses.json');
+        if (!res.ok) throw new Error('Fetch failed');
+        const data = await res.json();
+        adminCourses = data.courses;
+        renderDashboard();
+        renderCoursesTable();
+      } catch (err) {
+        console.error(err);
+        showToast('Could not load data/courses.json', 'error');
+      }
+    }
+
+    /* ── Labels ── */
+    const CAT_LABELS  = { delf: 'DELF', casual: 'Casual French', 'school-tutoring': 'School Tutoring', tef: 'TEF / TCF' };
+    const TYPE_LABELS = { 'ongoing-batch': 'Ongoing Batch', individual: 'Individual', upcoming: 'Upcoming' };
+
+    /* ── Dashboard ── */
+    function renderDashboard() {
+      document.getElementById('statTotal').textContent      = adminCourses.length;
+      document.getElementById('statOngoing').textContent    = adminCourses.filter(c => c.type === 'ongoing-batch').length;
+      document.getElementById('statIndividual').textContent = adminCourses.filter(c => c.type === 'individual').length;
+      document.getElementById('statUpcoming').textContent   = adminCourses.filter(c => c.type === 'upcoming').length;
+
+      const tbody = document.getElementById('dashCoursesBody');
+      tbody.innerHTML = adminCourses.map(c => `
+        <tr>
+          <td><strong style="color:var(--navy)">${c.title}</strong></td>
+          <td><span class="badge-sm ${c.category}">${CAT_LABELS[c.category] || c.category}</span></td>
+          <td><span class="badge-sm type-${c.type}">${TYPE_LABELS[c.type] || c.type}</span></td>
+          <td>
+            <span class="badge badge-sm ${c.openForAdmission ? 'badge-open badge-active' : 'badge-closed badge-inactive'}">
+              ${c.openForAdmission ? 'Open' : 'Closed'}
+            </span>
+          </td>
+        </tr>`).join('');
+    }
+
+    /* ── Courses table ── */
+    function renderCoursesTable() {
+      const tbody = document.getElementById('adminCoursesBody');
+      if (adminCourses.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text-light)">No courses yet. Click "+ Add New Course" to begin.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = adminCourses.map(c => `
+        <tr>
+          <td class="course-title-cell">
+            <strong>${c.title}</strong>
+            <span>${truncate(c.description, 60)}</span>
+          </td>
+          <td><span class="badge-sm ${c.category}">${CAT_LABELS[c.category] || c.category}</span></td>
+          <td><span class="badge-sm type-${c.type}">${TYPE_LABELS[c.type] || c.type}</span></td>
+          <td style="white-space:nowrap;font-size:.82rem">${fmtDateRange(c.startDate, c.endDate)}</td>
+          <td>
+            <span class="badge ${c.openForAdmission ? 'badge-active' : 'badge-inactive'}">
+              ${c.openForAdmission ? 'Open' : 'Closed'}
+            </span>
+          </td>
+          <td>
+            <div class="action-btns">
+              <button class="action-btn action-btn-edit"   onclick="openEditModal(${c.id})">Edit</button>
+              <button class="action-btn action-btn-delete" onclick="deleteCourse(${c.id})">Delete</button>
+            </div>
+          </td>
+        </tr>`).join('');
+    }
+
+    /* ── Helpers ── */
+    function truncate(str, n) {
+      return str && str.length > n ? str.slice(0, n) + '…' : (str || '');
+    }
+
+    function fmtDateRange(start, end) {
+      if (!start && !end) return '—';
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const fmt = ym => {
+        if (!ym) return null;
+        const [y, m] = ym.split('-');
+        return `${months[parseInt(m, 10) - 1]} ${y}`;
+      };
+      const s = fmt(start), e = fmt(end);
+      return (s && e) ? `${s} – ${e}` : (s || e || '—');
+    }
+
+    /* ── Modal: Add ── */
+    function openAddModal() {
+      editingId = null;
+      document.getElementById('courseModalTitle').textContent = 'Add New Course';
+      document.getElementById('courseForm').reset();
+      document.getElementById('fId').value = '';
+      document.getElementById('courseModal').classList.add('open');
+      setTimeout(() => document.getElementById('fTitle').focus(), 60);
+    }
+
+    /* ── Modal: Edit ── */
+    function openEditModal(id) {
+      const c = adminCourses.find(x => x.id === id);
+      if (!c) return;
+      editingId = id;
+      document.getElementById('courseModalTitle').textContent = 'Edit Course';
+      document.getElementById('fId').value          = c.id;
+      document.getElementById('fTitle').value       = c.title;
+      document.getElementById('fCategory').value    = c.category;
+      document.getElementById('fType').value        = c.type;
+      document.getElementById('fStart').value       = c.startDate || '';
+      document.getElementById('fEnd').value         = c.endDate   || '';
+      document.getElementById('fDesc').value        = c.description;
+      document.getElementById('fAdmission').checked = !!c.openForAdmission;
+      document.getElementById('fAgeGroup').value    = c.ageGroup || 'all';
+      document.getElementById('courseModal').classList.add('open');
+      setTimeout(() => document.getElementById('fTitle').focus(), 60);
+    }
+
+    function closeCourseModal() {
+      document.getElementById('courseModal').classList.remove('open');
+      editingId = null;
+    }
+
+    /* Close modal on backdrop click or Escape */
+    document.getElementById('courseModal').addEventListener('click', e => {
+      if (e.target === e.currentTarget) closeCourseModal();
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeCourseModal();
+    });
+
+    /* ── Save course (add or update) ── */
+    document.getElementById('courseForm').addEventListener('submit', e => {
+      e.preventDefault();
+
+      const title = document.getElementById('fTitle').value.trim();
+      const desc  = document.getElementById('fDesc').value.trim();
+
+      if (!title) { showToast('Course title is required.', 'error'); return; }
+      if (!desc)  { showToast('Description is required.', 'error'); return; }
+
+      const nextId = editingId || (adminCourses.length
+        ? Math.max(...adminCourses.map(c => c.id)) + 1
+        : 1);
+
+      const course = {
+        id:               nextId,
+        title,
+        category:         document.getElementById('fCategory').value,
+        type:             document.getElementById('fType').value,
+        startDate:        document.getElementById('fStart').value || null,
+        endDate:          document.getElementById('fEnd').value   || null,
+        description:      desc,
+        openForAdmission: document.getElementById('fAdmission').checked,
+        ageGroup:         document.getElementById('fAgeGroup').value,
+      };
+
+      if (editingId) {
+        const idx = adminCourses.findIndex(c => c.id === editingId);
+        if (idx > -1) adminCourses[idx] = course;
+      } else {
+        adminCourses.push(course);
+      }
+
+      closeCourseModal();
+      renderDashboard();
+      renderCoursesTable();
+      showToast(
+        editingId ? 'Course updated. Click "Generate JSON" to export.' : 'Course added. Click "Generate JSON" to export.',
+        'success'
+      );
+    });
+
+    /* ── Delete course ── */
+    function deleteCourse(id) {
+      const c = adminCourses.find(x => x.id === id);
+      if (!c) return;
+      if (!confirm(`Delete "${c.title}"?\n\nThis removes it from the admin view. Generate and commit the new JSON to make it permanent.`)) return;
+      adminCourses = adminCourses.filter(x => x.id !== id);
+      renderDashboard();
+      renderCoursesTable();
+      showToast('Course removed. Generate JSON to export your changes.', 'success');
+    }
+
+    /* ── Generate JSON ── */
+    function generateJson() {
+      const json = JSON.stringify({ courses: adminCourses }, null, 2);
+      document.getElementById('jsonOutput').value = json;
+      const panel = document.getElementById('jsonPanel');
+      panel.style.display = 'block';
+      switchSection('coursesSection'); // make sure we're on courses tab
+      setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+    }
+
+    function closeJsonPanel() {
+      document.getElementById('jsonPanel').style.display = 'none';
+    }
+
+    function copyJson() {
+      const ta = document.getElementById('jsonOutput');
+      ta.select();
+      try {
+        navigator.clipboard.writeText(ta.value).then(() => {
+          showToast('Copied to clipboard!', 'success');
+        });
+      } catch {
+        document.execCommand('copy');
+        showToast('Copied to clipboard!', 'success');
+      }
+    }
+
+    function downloadJson() {
+      const json = document.getElementById('jsonOutput').value;
+      if (!json) { showToast('Generate the JSON first.', 'error'); return; }
+      const blob = new Blob([json], { type: 'application/json' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = 'courses.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Downloaded! Replace data/courses.json in your GitHub repo.', 'success');
+    }
+
+    /* ── Sidebar navigation ── */
+    document.querySelectorAll('[data-section]').forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        switchSection(link.dataset.section);
+      });
+    });
+
+    function switchSection(id) {
+      document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('[data-section]').forEach(a => a.classList.remove('active'));
+      const section = document.getElementById(id);
+      const link    = document.querySelector(`[data-section="${id}"]`);
+      if (section) section.classList.add('active');
+      if (link)    link.classList.add('active');
+      document.getElementById('adminPageTitle').textContent =
+        id === 'dashboardSection' ? 'Dashboard' : 'Courses';
+    }
+
+    /* ── Toast notifications ── */
+    function showToast(message, type = 'info') {
+      let container = document.querySelector('.toast-container');
+      if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+      }
+      const t = document.createElement('div');
+      t.className   = `toast ${type}`;
+      t.textContent = message;
+      container.appendChild(t);
+      setTimeout(() => {
+        t.style.opacity   = '0';
+        t.style.transform = 'translateX(100%)';
+        t.style.transition = 'all .3s ease';
+        setTimeout(() => t.remove(), 300);
+      }, 3800);
+    }
+  </script>
+</body>
+</html>

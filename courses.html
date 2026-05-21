@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Courses — Apprendre French Language School</title>
+  <meta name="description" content="Browse DELF, TEF/TCF, school tutoring, and casual French courses at Apprendre — Alliance Française certified teaching for all ages." />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* ── Dual filter bar ── */
+    .dual-filter-bar { display: flex; flex-direction: column; gap: .875rem; margin-bottom: 2rem; }
+    .filter-row { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+    .filter-row-label {
+      font-size: .72rem; font-weight: 700; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--text-light); min-width: 70px; flex-shrink: 0;
+    }
+
+    /* ── Results count ── */
+    .results-count { font-size: .85rem; color: var(--text-light); margin-bottom: 1.25rem; min-height: 1.2em; }
+
+    /* ── Card header (badges row) ── */
+    .cpc-header {
+      display: flex; flex-wrap: wrap; align-items: center; gap: .4rem;
+      padding: .8rem 1.4rem;
+      border-bottom: 1px solid rgba(26,39,68,.06);
+      background: rgba(26,39,68,.025);
+      min-height: 48px;
+    }
+
+    /* Category badges */
+    .badge-cat {
+      display: inline-block; padding: .18rem .6rem; border-radius: 20px;
+      font-size: .67rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    }
+    .badge-delf            { background: rgba(201,168,76,.14); color: #7a5500; border: 1px solid rgba(201,168,76,.45); }
+    .badge-casual          { background: rgba(34,197,94,.1);   color: #166534; border: 1px solid rgba(34,197,94,.3); }
+    .badge-school-tutoring { background: rgba(139,92,246,.1);  color: #5b21b6; border: 1px solid rgba(139,92,246,.3); }
+    .badge-tef             { background: rgba(59,130,246,.1);  color: #1e40af; border: 1px solid rgba(59,130,246,.3); }
+
+    /* Type badge */
+    .badge-type {
+      display: inline-block; padding: .18rem .6rem; border-radius: 20px;
+      font-size: .67rem; font-weight: 700;
+      background: rgba(26,39,68,.07); color: var(--text-mid);
+    }
+
+    /* Open for admissions badge */
+    .badge-open {
+      margin-left: auto; display: inline-flex; align-items: center; gap: .25rem;
+      padding: .18rem .65rem; border-radius: 20px;
+      font-size: .67rem; font-weight: 700;
+      background: rgba(34,197,94,.12); color: #166534; border: 1px solid rgba(34,197,94,.35);
+    }
+
+    /* Date line inside card body */
+    .cpc-dates { font-size: .83rem; color: var(--text-light); margin: .3rem 0 .65rem; }
+
+    /* Notify Me button */
+    .btn-notify {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: .55rem 1.25rem; min-height: 44px; border-radius: 4px;
+      font-family: 'Lato', sans-serif; font-size: .82rem; font-weight: 700;
+      letter-spacing: .05em; cursor: pointer;
+      background: transparent; color: var(--navy); border: 2px solid var(--navy);
+      transition: all var(--transition);
+    }
+    .btn-notify:hover { background: var(--navy); color: var(--white); transform: translateY(-2px); }
+
+    /* ── Category info section ── */
+    .cat-info-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 2rem; margin-top: 3rem;
+    }
+    .cat-info-block {
+      background: var(--white); border-radius: 14px; padding: 2rem;
+      border: 1px solid rgba(26,39,68,.07); border-top: 4px solid transparent;
+      transition: box-shadow var(--transition);
+    }
+    .cat-info-block:hover { box-shadow: var(--shadow-md); }
+    .cat-info-block.cat-delf            { border-top-color: var(--gold); }
+    .cat-info-block.cat-tef             { border-top-color: #3b82f6; }
+    .cat-info-block.cat-school-tutoring { border-top-color: #8b5cf6; }
+    .cat-info-block.cat-casual          { border-top-color: #22c55e; }
+
+    .cat-info-icon { font-size: 2.25rem; margin-bottom: .65rem; }
+
+    .cat-info-tag {
+      display: inline-block; font-size: .72rem; font-weight: 700;
+      letter-spacing: .12em; text-transform: uppercase; margin-bottom: .6rem;
+    }
+    .cat-delf .cat-info-tag            { color: var(--gold); }
+    .cat-tef .cat-info-tag             { color: #3b82f6; }
+    .cat-school-tutoring .cat-info-tag { color: #8b5cf6; }
+    .cat-casual .cat-info-tag          { color: #22c55e; }
+
+    .cat-info-block h3 { font-size: 1.15rem; color: var(--navy); margin-bottom: .75rem; }
+
+    .cat-info-block p {
+      font-size: .9rem; color: var(--text-mid); line-height: 1.75; margin-bottom: .65rem;
+    }
+    .cat-info-block p:last-of-type { margin-bottom: 0; }
+
+    .cat-info-list { list-style: none; padding: 0; margin: .85rem 0 0; }
+    .cat-info-list li {
+      font-size: .875rem; color: var(--text-mid);
+      padding: .3rem 0 .3rem 1.25rem; position: relative;
+      border-bottom: 1px solid rgba(26,39,68,.04);
+    }
+    .cat-info-list li:last-child { border-bottom: none; }
+    .cat-info-list li::before { content: '›'; position: absolute; left: 0; font-weight: 700; }
+    .cat-delf .cat-info-list li::before            { color: var(--gold); }
+    .cat-tef .cat-info-list li::before             { color: #3b82f6; }
+    .cat-school-tutoring .cat-info-list li::before { color: #8b5cf6; }
+    .cat-casual .cat-info-list li::before          { color: #22c55e; }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .cat-info-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .filter-row-label { min-width: 100%; margin-bottom: -.25rem; }
+      .dual-filter-bar { gap: 1.25rem; }
+    }
+    @media (max-width: 480px) {
+      /* Card footer: stack button full-width so it's easy to tap */
+      .course-card-footer {
+        flex-direction: column;
+        align-items: stretch;
+        gap: .5rem;
+        padding: .875rem 1.25rem;
+      }
+      .course-card-footer .btn,
+      .course-card-footer .btn-notify {
+        width: 100%;
+        justify-content: center;
+      }
+      /* Category info blocks: tighter padding */
+      .cat-info-block { padding: 1.5rem; }
+      /* Results count stays readable */
+      .results-count { font-size: .8rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <div class="container">
+      <a href="index.html" class="navbar-brand"><em>apprendre</em> <span>·</span></a>
+      <ul class="navbar-links" role="list">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="courses.html" class="active">Courses</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li class="navbar-cta"><a href="contact.html" class="btn btn-primary">Book a Trial</a></li>
+      </ul>
+      <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Page Hero -->
+  <section class="page-hero">
+    <div class="container">
+      <p class="section-label" style="color:var(--gold)">All Programmes</p>
+      <h1>Our French Courses</h1>
+      <p>Alliance Française certified instruction for every age, goal, and level — from first bonjour to exam day.</p>
+    </div>
+  </section>
+
+  <!-- Courses Section -->
+  <section style="padding:60px 0 80px">
+    <div class="container">
+
+      <!-- Dual Filter -->
+      <div class="dual-filter-bar">
+        <div class="filter-row" role="group" aria-label="Filter by category">
+          <span class="filter-row-label">Category</span>
+          <button class="filter-btn active" data-cat="all">All</button>
+          <button class="filter-btn" data-cat="delf">DELF</button>
+          <button class="filter-btn" data-cat="tef">TEF / TCF</button>
+          <button class="filter-btn" data-cat="school-tutoring">School Tutoring</button>
+          <button class="filter-btn" data-cat="casual">Casual French</button>
+        </div>
+        <div class="filter-row" role="group" aria-label="Filter by format">
+          <span class="filter-row-label">Format</span>
+          <button class="filter-btn active" data-type="all">All</button>
+          <button class="filter-btn" data-type="ongoing-batch">Ongoing Batches</button>
+          <button class="filter-btn" data-type="individual">Individual Classes</button>
+          <button class="filter-btn" data-type="upcoming">Upcoming</button>
+        </div>
+      </div>
+
+      <p class="results-count" id="resultsCount" aria-live="polite"></p>
+
+      <!-- Grid -->
+      <div class="courses-grid" id="allCoursesGrid">
+        <div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--text-light)">Loading courses…</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Category Descriptions -->
+  <section style="background:var(--cream);padding:80px 0">
+    <div class="container">
+      <div class="text-center">
+        <p class="section-label">Understanding Our Programmes</p>
+        <h2 class="section-title">Course Categories Explained</h2>
+        <div class="divider"></div>
+        <p class="section-subtitle">Not sure which programme is right for you? Here's a guide to each of our course streams.</p>
+      </div>
+
+      <div class="cat-info-grid">
+
+        <!-- DELF -->
+        <div class="cat-info-block cat-delf" id="info-delf">
+          <div class="cat-info-icon">🎓</div>
+          <div class="cat-info-tag">Official French Certification</div>
+          <h3>DELF — Diplôme d'Études en Langue Française</h3>
+          <p>
+            DELF is the internationally recognised French language diploma issued by France Éducation International on behalf of the French Ministry of National Education. Valid in over 170 countries, it is accepted by universities, governments, immigration bodies, and employers worldwide.
+          </p>
+          <p>
+            Unlike a scored test, DELF is a pass/fail diploma with <strong>lifetime validity</strong> — it never expires. It tests all four language competencies: Listening, Reading, Writing, and Speaking.
+          </p>
+          <ul class="cat-info-list">
+            <li><strong>DELF Junior</strong> — For school-age learners (A1 to B2), with age-appropriate themes and tasks</li>
+            <li><strong>DELF Tout Public</strong> — For adults (A1 to B2), covering general and professional French</li>
+            <li>Levels: A1 (beginner) through B2 (upper intermediate)</li>
+            <li>Recognised for university admission, study-abroad applications, and immigration</li>
+            <li>At Apprendre, our Alliance Française certified teachers cover all four exam skills with structured mock exams and targeted feedback sessions</li>
+          </ul>
+        </div>
+
+        <!-- TEF / TCF -->
+        <div class="cat-info-block cat-tef" id="info-tef">
+          <div class="cat-info-icon">📊</div>
+          <div class="cat-info-tag">Immigration &amp; University Assessment</div>
+          <h3>TEF / TCF — French Proficiency Tests</h3>
+          <p>
+            <strong>TEF</strong> (Test d'Évaluation de Français) and <strong>TCF</strong> (Test de Connaissance du Français) are score-based French proficiency assessments. Unlike DELF, they award a score that maps to a CEFR level rather than a permanent diploma.
+          </p>
+          <p>
+            These tests are essential for specific goals: Canadian or Quebec immigration, French citizenship applications, and international students applying to French universities.
+          </p>
+          <ul class="cat-info-list">
+            <li><strong>TEF Canada</strong> — Accepted for Express Entry, Canadian permanent residency, and citizenship</li>
+            <li><strong>TCF Canada / TCF Québec</strong> — Required for IRCC and Quebec immigration (RAMQ) processes</li>
+            <li><strong>TCF pour la DAP</strong> — Required for international students applying to French higher-education institutions</li>
+            <li>Scores are valid for 2 years from the exam date</li>
+            <li>At Apprendre, we offer focused coaching for all TEF and TCF formats — contact us to discuss your specific goal</li>
+          </ul>
+        </div>
+
+        <!-- School Tutoring -->
+        <div class="cat-info-block cat-school-tutoring" id="info-school">
+          <div class="cat-info-icon">🏫</div>
+          <div class="cat-info-tag">Curriculum-Aligned Support</div>
+          <h3>School Tutoring</h3>
+          <p>
+            Our school tutoring programme is designed to complement the French curriculum followed by ICSE, CBSE, and IGCSE students. Sessions align closely with what students are studying in class, building both exam readiness and genuine language confidence at the same time.
+          </p>
+          <p>
+            We offer small-batch and individual sessions to maximise personal attention. Our teachers are experienced in school examination formats and provide regular practice with past papers, error analysis, and detailed feedback.
+          </p>
+          <ul class="cat-info-list">
+            <li>Covers grammar, reading comprehension, guided composition, and oral preparation</li>
+            <li>Syllabus-aligned for ICSE, CBSE, and IGCSE French</li>
+            <li>Timed mock papers with detailed error analysis</li>
+            <li>Builds examination strategy alongside language skills</li>
+            <li>Small batches (max 4 students) for focused, personalised attention</li>
+          </ul>
+        </div>
+
+        <!-- Casual French -->
+        <div class="cat-info-block cat-casual" id="info-casual">
+          <div class="cat-info-icon">🌟</div>
+          <div class="cat-info-tag">French for the Love of It</div>
+          <h3>Casual French</h3>
+          <p>
+            Not everyone learns French for an exam — and that's perfectly fine. Our Casual French courses are designed for learners who want to enjoy the language without the pressure of a formal assessment. Whether you're a complete beginner, a curious parent, or simply a Francophile, there's a place for you here.
+          </p>
+          <p>
+            From our lively Summer Camps for children — packed with games, songs, and cultural activities — to our year-round Beginner Regular batches, Casual French is all about fun, communication, and a genuine love for the language.
+          </p>
+          <ul class="cat-info-list">
+            <li>No prior French knowledge required for beginner batches</li>
+            <li><strong>Summer Camp</strong> — Immersive, activity-based learning during school holidays for children</li>
+            <li><strong>Beginner Regular</strong> — New batches starting throughout the year; admissions always open</li>
+            <li>Real-world communication focus: greetings, travel, everyday conversation</li>
+            <li>Interactive methods — role-plays, discussions, videos, songs, and cultural activities</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Express Interest / Notify Me Modal -->
+  <div class="modal-overlay" id="interestModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modalTitle">Express Interest</h3>
+        <button class="modal-close" onclick="closeInterestModal()" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!--
+          FORMSPREE SETUP
+          ───────────────
+          1. Create a free account at https://formspree.io
+          2. Click "New Form", name it, and copy the Form ID shown (e.g. xpwzejkr)
+          3. Replace YOUR_FORM_ID in the FORMSPREE_ENDPOINT constant in the <script> below
+        -->
+        <form id="interestForm" novalidate>
+          <div class="form-group">
+            <label for="iName">Student Name *</label>
+            <input type="text" id="iName" name="name" required placeholder="Full name" autocomplete="name" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="iEmail">Email Address *</label>
+              <input type="email" id="iEmail" name="email" required placeholder="you@email.com" autocomplete="email" />
+            </div>
+            <div class="form-group">
+              <label for="iPhone">Phone Number</label>
+              <input type="tel" id="iPhone" name="phone" placeholder="+91 98411 45456" autocomplete="tel" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="iMessage">Message</label>
+            <textarea id="iMessage" name="message" rows="3" placeholder="Tell us about your goals or any questions…"></textarea>
+          </div>
+          <!-- Hidden fields sent to Formspree -->
+          <input type="hidden" id="iCourse" name="course" />
+          <input type="hidden" name="_subject" id="iSubject" value="Course Enquiry — Apprendre" />
+          <div class="modal-footer" style="padding:0;border:none;margin-top:1.5rem">
+            <button type="button" class="btn btn-outline" onclick="closeInterestModal()"
+              style="color:var(--navy);border-color:rgba(26,39,68,.2)">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="modalSubmitBtn">Send</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid footer-grid-3col">
+        <div>
+          <span class="footer-brand"><em>apprendre</em> <span>·</span></span>
+          <p class="footer-tagline">Passionate French language coaching for learners of all ages, certified by Alliance Française.</p>
+          <div class="social-links">
+            <a href="#" class="social-link" aria-label="Instagram">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+        <div>
+          <p class="footer-heading">Quick Links</p>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="courses.html">Courses</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="footer-heading">Contact</p>
+          <ul class="footer-links">
+            <li><a href="tel:+919841145456">+91 9841145456</a></li>
+            <li><a href="mailto:apprendrelanguageschool@gmail.com">apprendrelanguageschool@gmail.com</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 Apprendre French Language School. All rights reserved.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script>
+    /* ============================================================
+       Courses Page — filtering, rendering, modal, Formspree
+       ============================================================ */
+
+    /* Replace YOUR_FORM_ID with your Formspree form ID */
+    const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mgoqkpww';
+
+    let allCourses   = [];
+    let activeCat    = 'all';
+    let activeType   = 'all';
+    let currentCourse = null;
+
+    const CAT_LABELS = {
+      'delf':            'DELF',
+      'casual':          'Casual French',
+      'school-tutoring': 'School Tutoring',
+      'tef':             'TEF / TCF',
+    };
+
+    const TYPE_LABELS = {
+      'ongoing-batch': 'Ongoing Batch',
+      'individual':    'Individual',
+      'upcoming':      'Upcoming',
+    };
+
+    /* ── Boot ── */
+    document.addEventListener('DOMContentLoaded', async () => {
+      initCourseFilters();
+      try {
+        const res = await fetch('data/courses.json');
+        if (!res.ok) throw new Error('Network error');
+        const data = await res.json();
+        allCourses = data.courses;
+        applyFilters();
+      } catch (err) {
+        console.error(err);
+        document.getElementById('allCoursesGrid').innerHTML =
+          '<p style="color:var(--text-mid);grid-column:1/-1;text-align:center;padding:3rem 0">Unable to load courses. Please try again later.</p>';
+      }
+    });
+
+    /* ── Filter wiring ── */
+    function initCourseFilters() {
+      document.querySelectorAll('[data-cat]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('[data-cat]').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          activeCat = btn.dataset.cat;
+          applyFilters();
+        });
+      });
+      document.querySelectorAll('[data-type]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('[data-type]').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          activeType = btn.dataset.type;
+          applyFilters();
+        });
+      });
+    }
+
+    /* ── Apply both filters (AND logic) ── */
+    function applyFilters() {
+      let filtered = allCourses;
+      if (activeCat  !== 'all') filtered = filtered.filter(c => c.category === activeCat);
+      if (activeType !== 'all') filtered = filtered.filter(c => c.type     === activeType);
+      renderGrid(filtered);
+    }
+
+    /* ── Render ── */
+    function renderGrid(courses) {
+      const grid    = document.getElementById('allCoursesGrid');
+      const countEl = document.getElementById('resultsCount');
+
+      if (courses.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column:1/-1;text-align:center;padding:4rem 1rem">
+            <div style="font-size:3rem;margin-bottom:1rem">🔍</div>
+            <p style="color:var(--text-mid);font-size:1rem">
+              No courses match this combination.<br>Try adjusting the filters above.
+            </p>
+          </div>`;
+        countEl.textContent = '';
+        return;
+      }
+
+      const total = allCourses.length;
+      countEl.textContent = filtered.length === total
+        ? `Showing all ${total} courses`
+        : `Showing ${courses.length} of ${total} courses`;
+
+      grid.innerHTML = courses.map(buildCard).join('');
+
+      /* Staggered entrance */
+      grid.querySelectorAll('.course-card').forEach((el, i) => {
+        el.style.opacity   = '0';
+        el.style.transform = 'translateY(18px)';
+        el.style.transition = `opacity .32s ease ${i * 0.055}s, transform .32s ease ${i * 0.055}s`;
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          el.style.opacity   = '1';
+          el.style.transform = 'translateY(0)';
+        }));
+      });
+    }
+
+    /* ── Build one card ── */
+    function buildCard(course) {
+      const catLabel  = CAT_LABELS[course.category]  || course.category;
+      const typeLabel = TYPE_LABELS[course.type]      || course.type;
+
+      const start     = fmtMonth(course.startDate);
+      const end       = fmtMonth(course.endDate);
+      const dateRange = (start && end) ? `${start} – ${end}` : (start || 'Ongoing');
+
+      const openBadge = course.openForAdmission
+        ? `<span class="badge-open">✓ Open for Admissions</span>` : '';
+
+      const actionBtn = course.type === 'upcoming'
+        ? `<button class="btn-notify"
+               onclick="openModal(${course.id}, true)"
+               aria-label="Get notified about ${course.title}">Notify Me</button>`
+        : `<button class="btn btn-primary"
+               style="padding:.55rem 1.25rem;font-size:.82rem"
+               onclick="openModal(${course.id}, false)"
+               aria-label="Express interest in ${course.title}">Express Interest</button>`;
+
+      return `
+        <div class="course-card" data-id="${course.id}">
+          <div class="cpc-header">
+            <span class="badge-cat badge-${course.category}">${catLabel}</span>
+            <span class="badge-type">${typeLabel}</span>
+            ${openBadge}
+          </div>
+          <div class="course-card-body">
+            <h3>${course.title}</h3>
+            <p class="cpc-dates">📅 ${dateRange}</p>
+            <p>${course.description}</p>
+          </div>
+          <div class="course-card-footer">
+            ${actionBtn}
+          </div>
+        </div>`;
+    }
+
+    /* ── Modal open/close ── */
+    function openModal(courseId, isNotify) {
+      currentCourse = allCourses.find(c => c.id === courseId);
+      if (!currentCourse) return;
+
+      document.getElementById('modalTitle').textContent = isNotify
+        ? `Get Notified: ${currentCourse.title}`
+        : `Express Interest: ${currentCourse.title}`;
+
+      document.getElementById('iCourse').value  = currentCourse.title;
+      document.getElementById('iSubject').value = isNotify
+        ? `Notify Me Request — ${currentCourse.title}`
+        : `Course Enquiry — ${currentCourse.title}`;
+      document.getElementById('iMessage').value = isNotify
+        ? `I'd like to be notified when "${currentCourse.title}" opens for admissions.`
+        : `I'm interested in the "${currentCourse.title}" course. Please share more details.`;
+
+      document.getElementById('interestModal').classList.add('open');
+      setTimeout(() => document.getElementById('iName').focus(), 50);
+    }
+
+    function closeInterestModal() {
+      document.getElementById('interestModal').classList.remove('open');
+      document.getElementById('interestForm').reset();
+    }
+
+    document.getElementById('interestModal').addEventListener('click', e => {
+      if (e.target === e.currentTarget) closeInterestModal();
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeInterestModal();
+    });
+
+    /* ── Formspree submit ── */
+    document.getElementById('interestForm').addEventListener('submit', async e => {
+      e.preventDefault();
+
+      const name  = document.getElementById('iName').value.trim();
+      const email = document.getElementById('iEmail').value.trim();
+      if (!name || !email) {
+        window.showToast?.('Please fill in your name and email address.', 'error');
+        return;
+      }
+
+      const btn      = document.getElementById('modalSubmitBtn');
+      const original = btn.textContent;
+      btn.textContent = 'Sending…';
+      btn.disabled    = true;
+
+      const payload = {
+        name,
+        email,
+        phone:   document.getElementById('iPhone').value.trim(),
+        course:  document.getElementById('iCourse').value,
+        message: document.getElementById('iMessage').value.trim(),
+        _subject: document.getElementById('iSubject').value,
+      };
+
+      try {
+        const res = await fetch(FORMSPREE_ENDPOINT, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body:    JSON.stringify(payload),
+        });
+        if (res.ok) {
+          closeInterestModal();
+          window.showToast?.("Your interest has been registered! We'll be in touch soon.", 'success');
+        } else {
+          throw new Error('Formspree returned non-OK');
+        }
+      } catch {
+        window.showToast?.(
+          'Something went wrong. Please email us at apprendrelanguageschool@gmail.com',
+          'error'
+        );
+      } finally {
+        btn.textContent = original;
+        btn.disabled    = false;
+      }
+    });
+
+    /* ── Date helper ── */
+    function fmtMonth(ym) {
+      if (!ym) return null;
+      const [year, month] = ym.split('-');
+      const names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      return `${names[parseInt(month, 10) - 1]} ${year}`;
+    }
+  </script>
+</body>
+</html>
