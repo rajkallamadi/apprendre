@@ -939,12 +939,13 @@ tbody tr:hover { background: rgba(201,168,76,.04); }
 
 /* ── Page Hero (inner pages) ── */
 .page-hero {
-  background: linear-gradient(135deg, var(--navy) 0%, #0f1a3d 100%);
+  background-color: #1a2744;
+  background-image: linear-gradient(135deg, #1a2744 0%, #0f1a3d 100%);
   padding: 120px 0 60px;
   text-align: center;
 }
-.page-hero h1 { color: var(--cream); font-size: clamp(2rem, 4vw, 3rem); margin-bottom: .75rem; }
-.page-hero p  { color: rgba(248,244,237,.65); font-size: 1.05rem; max-width: 540px; margin: 0 auto; }
+.page-hero h1 { color: #ffffff; font-size: clamp(2rem, 4vw, 3rem); margin-bottom: .75rem; }
+.page-hero p  { color: rgba(255,255,255,.75); font-size: 1.05rem; max-width: 540px; margin: 0 auto; }
 
 /* ── Footer ── */
 .footer {
