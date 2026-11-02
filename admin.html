@@ -395,7 +395,6 @@
 
   <!-- ════════════════════════════════════════════════
        LOGIN OVERLAY
-       Password: apprendre2026
        Stored as SHA-256: 0495c2807471a7ac98d62ff6d716cfb844ec7304da061660eccb9801cb75e054
        To change password: run sha256('new-password') in DevTools and update PASS_HASH below
   ═════════════════════════════════════════════════ -->
@@ -528,7 +527,7 @@
                 <button class="btn btn-primary" onclick="openAddModal()"
                   style="padding:.5rem 1.1rem;font-size:.85rem">+ Add New Course</button>
                 <button class="btn btn-navy" onclick="generateJson()"
-                  style="padding:.5rem 1.1rem;font-size:.85rem">⬇ Generate JSON</button>
+                  style="padding:.5rem 1.1rem;font-size:.85rem">⬇ Generate File</button>
               </div>
             </div>
             <div class="table-wrap">
@@ -551,37 +550,37 @@
           </div>
 
           <!-- ════════════════════════════════════════
-               JSON EXPORT PANEL
+               EXPORT PANEL
                NOTE FOR DEVELOPERS:
                GitHub Pages serves static files — there is no server-side write capability.
-               Clicking "Download courses.json" saves the updated JSON to your local machine.
+               Clicking "Download courses-data.js" saves the updated catalogue to your local machine.
                To publish your changes:
                  1. Download the file using the button below
-                 2. Replace data/courses.json in your repository
-                    (drag-and-drop on GitHub.com → your repo → data/ folder works perfectly)
+                 2. Replace js/courses-data.js in your repository
+                    (drag-and-drop on GitHub.com → your repo → js/ folder works perfectly)
                  3. Commit the change — the live site will update automatically.
           ══════════════════════════════════════════ -->
           <div id="jsonPanel" style="display:none">
             <div class="json-panel">
               <div class="json-panel-header">
-                <h3>Generated courses.json</h3>
+                <h3>Generated courses-data.js</h3>
                 <button class="json-close" onclick="closeJsonPanel()" aria-label="Close">&times;</button>
               </div>
               <div class="json-note">
                 <strong>ℹ GitHub Pages is static</strong> — this panel cannot write files directly to the server.
-                To save your changes, download the file below and commit <code>data/courses.json</code>
+                To save your changes, download the file below and commit <code>js/courses-data.js</code>
                 to your repository. On GitHub.com you can drag-and-drop the file onto the
-                <code>data/</code> folder in your repo to replace it in one step.
+                <code>js/</code> folder in your repo to replace it in one step.
               </div>
               <textarea id="jsonOutput" class="json-textarea" readonly spellcheck="false"
-                aria-label="Generated courses.json content"></textarea>
+                aria-label="Generated courses-data.js content"></textarea>
               <div class="json-actions">
                 <button class="btn btn-outline" onclick="copyJson()"
                   style="color:var(--navy);border-color:rgba(26,39,68,.2)">
                   Copy to Clipboard
                 </button>
                 <button class="btn btn-primary" onclick="downloadJson()">
-                  ⬇ Download courses.json
+                  ⬇ Download courses-data.js
                 </button>
               </div>
             </div>
@@ -680,10 +679,10 @@
     </div>
   </div>
 
+  <script src="js/courses-data.js"></script>
   <script>
     /* ============================================================
        ADMIN PANEL — all logic self-contained (no external JS deps)
-       Password: apprendre2026
        SHA-256 hash stored below. To change password:
          1. Open DevTools console (F12)
          2. Run: sha256('your-new-password').then(h => console.log(h))
@@ -704,14 +703,6 @@
         .join('');
     }
 
-    /* ── Boot: check session ── */
-    if (sessionStorage.getItem('admin_auth') === '1') {
-      showShell();
-      loadCourses();
-    } else {
-      document.getElementById('loginOverlay').style.display = 'flex';
-    }
-
     /* ── Login form ── */
     document.getElementById('loginForm').addEventListener('submit', async e => {
       e.preventDefault();
@@ -728,7 +719,7 @@
         sessionStorage.setItem('admin_auth', '1');
         document.getElementById('loginOverlay').style.display = 'none';
         showShell();
-        await loadCourses();
+        loadCourses();
       } else {
         const box = document.getElementById('loginBox');
         box.classList.add('shake');
@@ -750,19 +741,15 @@
       location.reload();
     }
 
-    /* ── Load courses from JSON ── */
-    async function loadCourses() {
-      try {
-        const res  = await fetch('data/courses.json');
-        if (!res.ok) throw new Error('Fetch failed');
-        const data = await res.json();
-        adminCourses = data.courses;
-        renderDashboard();
-        renderCoursesTable();
-      } catch (err) {
-        console.error(err);
-        showToast('Could not load data/courses.json', 'error');
+    /* ── Load courses from js/courses-data.js (same file the public site reads) ── */
+    function loadCourses() {
+      if (!window.COURSES_DATA) {
+        showToast('Could not load js/courses-data.js', 'error');
+        return;
       }
+      adminCourses = window.COURSES_DATA.courses;
+      renderDashboard();
+      renderCoursesTable();
     }
 
     /* ── Labels ── */
@@ -916,7 +903,7 @@
       renderDashboard();
       renderCoursesTable();
       showToast(
-        editingId ? 'Course updated. Click "Generate JSON" to export.' : 'Course added. Click "Generate JSON" to export.',
+        editingId ? 'Course updated. Click "Generate File" to export.' : 'Course added. Click "Generate File" to export.',
         'success'
       );
     });
@@ -925,17 +912,21 @@
     function deleteCourse(id) {
       const c = adminCourses.find(x => x.id === id);
       if (!c) return;
-      if (!confirm(`Delete "${c.title}"?\n\nThis removes it from the admin view. Generate and commit the new JSON to make it permanent.`)) return;
+      if (!confirm(`Delete "${c.title}"?\n\nThis removes it from the admin view. Generate and commit the new file to make it permanent.`)) return;
       adminCourses = adminCourses.filter(x => x.id !== id);
       renderDashboard();
       renderCoursesTable();
-      showToast('Course removed. Generate JSON to export your changes.', 'success');
+      showToast('Course removed. Click "Generate File" to export your changes.', 'success');
     }
 
-    /* ── Generate JSON ── */
+    /* ── Generate js/courses-data.js ── */
     function generateJson() {
       const json = JSON.stringify({ courses: adminCourses }, null, 2);
-      document.getElementById('jsonOutput').value = json;
+      document.getElementById('jsonOutput').value =
+        '/* ============================================================\n' +
+        '   courses-data.js — course catalogue (edit here to update)\n' +
+        '   ============================================================ */\n' +
+        `window.COURSES_DATA = ${json};\n`;
       const panel = document.getElementById('jsonPanel');
       panel.style.display = 'block';
       switchSection('coursesSection'); // make sure we're on courses tab
@@ -962,16 +953,16 @@
     function downloadJson() {
       const json = document.getElementById('jsonOutput').value;
       if (!json) { showToast('Generate the JSON first.', 'error'); return; }
-      const blob = new Blob([json], { type: 'application/json' });
+      const blob = new Blob([json], { type: 'text/javascript' });
       const url  = URL.createObjectURL(blob);
       const a    = document.createElement('a');
       a.href     = url;
-      a.download = 'courses.json';
+      a.download = 'courses-data.js';
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      showToast('Downloaded! Replace data/courses.json in your GitHub repo.', 'success');
+      showToast('Downloaded! Replace js/courses-data.js in your GitHub repo.', 'success');
     }
 
     /* ── Sidebar navigation ── */
@@ -1011,6 +1002,14 @@
         t.style.transition = 'all .3s ease';
         setTimeout(() => t.remove(), 300);
       }, 3800);
+    }
+
+    /* ── Boot: check session (last, so everything above is defined) ── */
+    if (sessionStorage.getItem('admin_auth') === '1') {
+      showShell();
+      loadCourses();
+    } else {
+      document.getElementById('loginOverlay').style.display = 'flex';
     }
   </script>
 </body>
