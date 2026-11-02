@@ -37,7 +37,7 @@ function initNavbar() {
 /* ── Highlight active nav link based on current page ── */
 function setActiveNavLink() {
   const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-  document.querySelectorAll('.navbar-links a').forEach(link => {
+  document.querySelectorAll('.navbar-links a:not(.btn)').forEach(link => {
     const href = link.getAttribute('href');
     if (href === currentPage || (currentPage === '' && href === 'index.html')) {
       link.classList.add('active');
