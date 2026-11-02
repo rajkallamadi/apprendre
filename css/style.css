@@ -208,6 +208,7 @@ ul { list-style: none; }
 }
 .navbar-links a:hover,
 .navbar-links a.active { color: var(--gold); }
+.navbar-links a.btn-primary { color: var(--navy); }
 
 .navbar-cta { margin-left: 1rem; }
 
