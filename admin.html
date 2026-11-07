@@ -269,6 +269,21 @@
       line-height: 1.65;
     }
     .json-note strong { color: var(--navy); }
+    .unsaved-note {
+      font-family: 'Lato', sans-serif;
+      font-size: .78rem;
+      font-weight: 700;
+      color: #b7791f;
+      margin-left: .5rem;
+      vertical-align: middle;
+    }
+    .token-steps {
+      font-size: .85rem;
+      color: var(--text-mid);
+      line-height: 1.6;
+      margin: 0 0 1.25rem 1.25rem;
+    }
+    .token-steps li { margin-bottom: .35rem; }
     .json-note code {
       background: rgba(26,39,68,.08);
       padding: .1rem .35rem;
@@ -443,6 +458,9 @@
         <a href="index.html" target="_blank" rel="noopener">
           <span class="nav-icon">🌐</span> View Site
         </a>
+        <a href="#" onclick="forgetToken(); return false;">
+          <span class="nav-icon">🔑</span> Forget GitHub Token
+        </a>
         <a href="#" onclick="logout(); return false;">
           <span class="nav-icon">🚪</span> Sign Out
         </a>
@@ -523,12 +541,14 @@
         <div class="admin-section" id="coursesSection">
           <div class="table-card">
             <div class="table-card-header">
-              <h3>All Courses</h3>
+              <h3>All Courses <span class="unsaved-note" id="unsavedNote" hidden>● Unpublished changes</span></h3>
               <div class="table-card-actions">
                 <button class="btn btn-primary" onclick="openAddModal()"
                   style="padding:.5rem 1.1rem;font-size:.85rem">+ Add New Course</button>
-                <button class="btn btn-navy" onclick="generateJson()"
-                  style="padding:.5rem 1.1rem;font-size:.85rem">⬇ Generate File</button>
+                <button class="btn btn-navy" onclick="publishCourses()" id="publishBtn"
+                  style="padding:.5rem 1.1rem;font-size:.85rem">🚀 Publish to Website</button>
+                <button class="btn btn-outline" onclick="generateJson()"
+                  style="padding:.5rem 1.1rem;font-size:.85rem;color:var(--navy);border-color:rgba(26,39,68,.2)">⬇ Generate File</button>
               </div>
             </div>
             <div class="table-wrap">
@@ -551,11 +571,11 @@
           </div>
 
           <!-- ════════════════════════════════════════
-               EXPORT PANEL
+               EXPORT PANEL (manual fallback for "Publish to Website")
                NOTE FOR DEVELOPERS:
                GitHub Pages serves static files — there is no server-side write capability.
-               Clicking "Download courses-data.js" saves the updated catalogue to your local machine.
-               To publish your changes:
+               "Publish to Website" commits js/courses-data.js through the GitHub API using a
+               token kept in this browser. Without a token, publish manually:
                  1. Download the file using the button below
                  2. Replace js/courses-data.js in your repository
                     (drag-and-drop on GitHub.com → your repo → js/ folder works perfectly)
@@ -680,6 +700,47 @@
     </div>
   </div>
 
+  <!-- ════════════════════════════════════════════════
+       GITHUB TOKEN MODAL (shown on first publish)
+  ═════════════════════════════════════════════════ -->
+  <div class="modal-overlay" id="tokenModal" role="dialog" aria-modal="true" aria-labelledby="tokenModalTitle">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="tokenModalTitle">Connect to GitHub</h3>
+        <button class="modal-close" onclick="closeTokenModal()" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="tokenForm" novalidate>
+          <p style="font-size:.9rem;margin-bottom:1rem">
+            Publishing saves your changes straight to the website. It needs a GitHub access token,
+            which is remembered in this browser only. One-time setup:
+          </p>
+          <ol class="token-steps">
+            <li>Open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub → New fine-grained token</a> (sign in as <strong>rajkallamadi</strong>).</li>
+            <li><strong>Token name:</strong> Apprendre admin. <strong>Expiration:</strong> your choice (e.g. 1 year).</li>
+            <li><strong>Repository access:</strong> Only select repositories → <strong>apprendre</strong>.</li>
+            <li><strong>Permissions → Repository permissions → Contents:</strong> Read and write.</li>
+            <li>Click <strong>Generate token</strong>, copy it and paste it below.</li>
+          </ol>
+          <div class="form-group">
+            <label for="tokenInput">GitHub token *</label>
+            <input type="password" id="tokenInput" placeholder="github_pat_…" autocomplete="off" spellcheck="false" />
+          </div>
+          <div class="login-error" id="tokenError"></div>
+          <p style="font-size:.8rem;color:var(--text-light)">
+            Only use this on your own computer. Anyone using this browser can publish until you
+            click <strong>Forget GitHub Token</strong> in the sidebar.
+          </p>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeTokenModal()"
+          style="color:var(--navy);border-color:rgba(26,39,68,.2)">Cancel</button>
+        <button type="submit" form="tokenForm" class="btn btn-primary" id="tokenSaveBtn">Save &amp; Publish</button>
+      </div>
+    </div>
+  </div>
+
   <script src="js/courses-data.js"></script>
   <script>
     /* ============================================================
@@ -742,16 +803,198 @@
       location.reload();
     }
 
-    /* ── Load courses from js/courses-data.js (same file the public site reads) ── */
-    function loadCourses() {
-      if (!window.COURSES_DATA) {
-        showToast('Could not load js/courses-data.js', 'error');
-        return;
+    /* ── Load courses from js/courses-data.js (same file the public site reads) ──
+       The site copy can lag a recent publish by a few minutes, so the latest
+       committed version is then fetched from GitHub and used instead. */
+    async function loadCourses() {
+      if (window.COURSES_DATA) {
+        adminCourses = window.COURSES_DATA.courses;
+        renderDashboard();
+        renderCoursesTable();
       }
-      adminCourses = window.COURSES_DATA.courses;
-      renderDashboard();
-      renderCoursesTable();
+      try {
+        const latest = parseDataFile(await fetchDataFile());
+        if (!isDirty && JSON.stringify(latest) !== JSON.stringify(adminCourses)) {
+          adminCourses = latest;
+          renderDashboard();
+          renderCoursesTable();
+        }
+      } catch (err) {
+        console.warn('Could not fetch latest courses from GitHub:', err);
+        if (!window.COURSES_DATA) showToast('Could not load js/courses-data.js', 'error');
+      }
     }
+
+    /* ── Unpublished-changes tracking ── */
+    let isDirty = false;
+    function setDirty(dirty) {
+      isDirty = dirty;
+      document.getElementById('unsavedNote').hidden = !dirty;
+    }
+    window.addEventListener('beforeunload', e => {
+      if (isDirty) { e.preventDefault(); e.returnValue = ''; }
+    });
+
+    /* ── GitHub publishing ── */
+    const GH_REPO   = 'rajkallamadi/apprendre';
+    const GH_BRANCH = 'main';
+    const GH_PATH   = 'js/courses-data.js';
+    const GH_API    = `https://api.github.com/repos/${GH_REPO}`;
+    const TOKEN_KEY = 'apprendre_gh_token';
+    let memToken    = null; // used when localStorage is unavailable
+
+    function getToken() {
+      try { return localStorage.getItem(TOKEN_KEY) || memToken; } catch { return memToken; }
+    }
+    function setToken(token) {
+      memToken = token;
+      try {
+        if (token) localStorage.setItem(TOKEN_KEY, token);
+        else localStorage.removeItem(TOKEN_KEY);
+      } catch { /* memory only */ }
+    }
+    function forgetToken() {
+      setToken(null);
+      showToast('GitHub token removed from this browser.', 'success');
+    }
+
+    function ghHeaders(token, extra = {}) {
+      const h = { Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28', ...extra };
+      if (token) h.Authorization = `Bearer ${token}`;
+      return h;
+    }
+
+    async function fetchDataFile() {
+      const res = await fetch(`${GH_API}/contents/${GH_PATH}?ref=${GH_BRANCH}`, {
+        headers: ghHeaders(getToken(), { Accept: 'application/vnd.github.raw+json' }),
+        cache: 'no-store',
+      });
+      if (!res.ok) throw new Error(`GitHub ${res.status}`);
+      return res.text();
+    }
+
+    function parseDataFile(text) {
+      const json = text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1);
+      return JSON.parse(json).courses;
+    }
+
+    function buildDataFile() {
+      const json = JSON.stringify({ courses: adminCourses }, null, 2);
+      return '/* ============================================================\n' +
+             '   courses-data.js — course catalogue (edit here to update)\n' +
+             '   ============================================================ */\n' +
+             `window.COURSES_DATA = ${json};\n`;
+    }
+
+    function toBase64(str) {
+      const bytes = new TextEncoder().encode(str);
+      let bin = '';
+      for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+      return btoa(bin);
+    }
+
+    class PublishError extends Error {
+      constructor(message, badToken = false) { super(message); this.badToken = badToken; }
+    }
+
+    function explainStatus(status) {
+      if (status === 401) return new PublishError('GitHub did not accept the token (it may be wrong or expired).', true);
+      if (status === 403 || status === 404)
+        return new PublishError(`The token is not allowed to change files in ${GH_REPO}. Check it has Contents: Read and write for the apprendre repository.`, true);
+      if (status === 409 || status === 422) return new PublishError('The file changed on GitHub while publishing. Please try again.');
+      return new PublishError(`GitHub returned an error (${status}). Please try again.`);
+    }
+
+    async function commitDataFile(token) {
+      let res;
+      try {
+        res = await fetch(`${GH_API}/contents/${GH_PATH}?ref=${GH_BRANCH}`, { headers: ghHeaders(token), cache: 'no-store' });
+      } catch { throw new PublishError('Could not reach GitHub. Check your internet connection.'); }
+      if (!res.ok) throw explainStatus(res.status);
+      const { sha } = await res.json();
+
+      try {
+        res = await fetch(`${GH_API}/contents/${GH_PATH}`, {
+          method: 'PUT',
+          headers: ghHeaders(token, { 'Content-Type': 'application/json' }),
+          body: JSON.stringify({
+            message: 'Update courses from admin panel',
+            content: toBase64(buildDataFile()),
+            sha,
+            branch: GH_BRANCH,
+          }),
+        });
+      } catch { throw new PublishError('Could not reach GitHub. Check your internet connection.'); }
+      if (!res.ok) throw explainStatus(res.status);
+    }
+
+    async function publishCourses() {
+      const token = getToken();
+      if (!token) { openTokenModal(); return; }
+
+      const btn = document.getElementById('publishBtn');
+      const label = btn.textContent;
+      btn.textContent = 'Publishing…';
+      btn.disabled = true;
+      try {
+        await commitDataFile(token);
+        setDirty(false);
+        showToast('Published! The website will show the changes in a few minutes.', 'success');
+      } catch (err) {
+        if (err.badToken) {
+          setToken(null);
+          openTokenModal(err.message);
+        } else {
+          showToast(err.message || 'Publishing failed.', 'error');
+        }
+      } finally {
+        btn.textContent = label;
+        btn.disabled = false;
+      }
+    }
+
+    function openTokenModal(message = '') {
+      document.getElementById('tokenInput').value = '';
+      document.getElementById('tokenError').textContent = message;
+      document.getElementById('tokenModal').classList.add('open');
+      setTimeout(() => document.getElementById('tokenInput').focus(), 60);
+    }
+    function closeTokenModal() {
+      document.getElementById('tokenModal').classList.remove('open');
+    }
+    document.getElementById('tokenModal').addEventListener('click', e => {
+      if (e.target === e.currentTarget) closeTokenModal();
+    });
+
+    document.getElementById('tokenForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const token = document.getElementById('tokenInput').value.trim();
+      const errEl = document.getElementById('tokenError');
+      if (!token) { errEl.textContent = 'Please paste your GitHub token.'; return; }
+
+      const btn = document.getElementById('tokenSaveBtn');
+      btn.textContent = 'Checking…';
+      btn.disabled = true;
+      errEl.textContent = '';
+      try {
+        let res;
+        try {
+          res = await fetch(GH_API, { headers: ghHeaders(token), cache: 'no-store' });
+        } catch { throw new PublishError('Could not reach GitHub. Check your internet connection.'); }
+        if (!res.ok) throw explainStatus(res.status);
+        const repo = await res.json();
+        if (!repo.permissions || !repo.permissions.push) throw explainStatus(403);
+
+        setToken(token);
+        closeTokenModal();
+        publishCourses();
+      } catch (err) {
+        errEl.textContent = err.message;
+      } finally {
+        btn.innerHTML = 'Save &amp; Publish';
+        btn.disabled = false;
+      }
+    });
 
     /* ── Labels ── */
     const CAT_LABELS  = { delf: 'DELF', casual: 'Casual French', 'school-tutoring': 'School Tutoring', tef: 'TEF / TCF' };
@@ -864,7 +1107,7 @@
       if (e.target === e.currentTarget) closeCourseModal();
     });
     document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') closeCourseModal();
+      if (e.key === 'Escape') { closeCourseModal(); closeTokenModal(); }
     });
 
     /* ── Save course (add or update) ── */
@@ -893,7 +1136,8 @@
         ageGroup:         document.getElementById('fAgeGroup').value,
       };
 
-      if (editingId) {
+      const wasEditing = !!editingId;
+      if (wasEditing) {
         const idx = adminCourses.findIndex(c => c.id === editingId);
         if (idx > -1) adminCourses[idx] = course;
       } else {
@@ -901,10 +1145,11 @@
       }
 
       closeCourseModal();
+      setDirty(true);
       renderDashboard();
       renderCoursesTable();
       showToast(
-        editingId ? 'Course updated. Click "Generate File" to export.' : 'Course added. Click "Generate File" to export.',
+        wasEditing ? 'Course updated. Click "Publish to Website" to make it live.' : 'Course added. Click "Publish to Website" to make it live.',
         'success'
       );
     });
@@ -913,21 +1158,17 @@
     function deleteCourse(id) {
       const c = adminCourses.find(x => x.id === id);
       if (!c) return;
-      if (!confirm(`Delete "${c.title}"?\n\nThis removes it from the admin view. Generate and commit the new file to make it permanent.`)) return;
+      if (!confirm(`Delete "${c.title}"?\n\nThis removes it from the admin view. Click "Publish to Website" to make it permanent.`)) return;
       adminCourses = adminCourses.filter(x => x.id !== id);
+      setDirty(true);
       renderDashboard();
       renderCoursesTable();
-      showToast('Course removed. Click "Generate File" to export your changes.', 'success');
+      showToast('Course removed. Click "Publish to Website" to make it live.', 'success');
     }
 
     /* ── Generate js/courses-data.js ── */
     function generateJson() {
-      const json = JSON.stringify({ courses: adminCourses }, null, 2);
-      document.getElementById('jsonOutput').value =
-        '/* ============================================================\n' +
-        '   courses-data.js — course catalogue (edit here to update)\n' +
-        '   ============================================================ */\n' +
-        `window.COURSES_DATA = ${json};\n`;
+      document.getElementById('jsonOutput').value = buildDataFile();
       const panel = document.getElementById('jsonPanel');
       panel.style.display = 'block';
       switchSection('coursesSection'); // make sure we're on courses tab
